@@ -1,0 +1,18 @@
+The dataset in data/ is licensed under the Creative Commons Attribution 4.0
+International Licence (CC BY 4.0).
+
+    https://creativecommons.org/licenses/by/4.0/
+
+You are free to share and adapt the material for any purpose, including
+commercially, provided you give appropriate credit, link to the licence, and
+indicate if changes were made.
+
+Scope note. This licence covers the derived, de-identified dataset released in
+data/ — the signals extracted by the language model together with the star
+rating and the review metadata. It does not cover the original review texts,
+which are not part of this release and remain subject to the terms of the
+platform from which they were retrieved. Reviewer identifiers were removed
+before analysis and are not included in any file in this repository.
+
+Code in this repository is licensed separately under the MIT Licence; see
+LICENSE.

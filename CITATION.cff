@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this dataset or code, please cite the paper below."
+title: "marrakech-tourism-llm: data and code for a single-inference zero-shot LLM framework for multi-dimensional tourism review analysis"
+abstract: >-
+  Extracted-signal dataset and analysis code for a framework based on Large
+  Language Models that extracts six analytical dimensions from a single
+  zero-shot inference, applied to 14,838 TripAdvisor reviews of two heritage
+  attractions in Marrakech, Morocco.
+type: dataset
+license: CC-BY-4.0
+authors:
+  - given-names: ""
+    family-names: ""
+    affiliation: "L3IA Laboratory, Faculty of Sciences Dhar El Mahraz, Sidi Mohamed Ben Abdellah University, Fez, Morocco"
+keywords:
+  - large language models
+  - zero-shot learning
+  - aspect-based sentiment analysis
+  - natural language processing
+  - tourism reviews
+  - TripAdvisor
+preferred-citation:
+  type: article
+  title: "A Single-Inference Zero-Shot LLM Framework for Multi-Dimensional Analysis of Machine-Translated Multilingual Tourism Reviews"
+  authors:
+    - given-names: ""
+      family-names: ""
+  year: 2026
