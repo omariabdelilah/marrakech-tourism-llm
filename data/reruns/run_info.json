@@ -1,0 +1,18 @@
+{
+  "run_date": "2026-09-23T23:08:59",
+  "model": "gemini-2.5-flash",
+  "model_versions_seen": [
+    "gemini-2.5-flash"
+  ],
+  "library": "google-generativeai 0.8.5",
+  "python": "3.12.4",
+  "batch_size": 15,
+  "workers": 4,
+  "trunc": 500,
+  "max_tries": 3,
+  "generation_config": "default (no temperature set) - same as original run",
+  "prices_used": {
+    "input": 0.3,
+    "output": 2.5
+  }
+}

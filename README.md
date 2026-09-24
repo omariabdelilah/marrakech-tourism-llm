@@ -1,112 +1,48 @@
 # marrakech-tourism-llm
 
-Data and code for the paper:
+Data and code for the paper **"A single-pass, training-free large language model framework for multidimensional analysis of tourism reviews"** (Abdelilah Omari and Imane Satauri, L3IA Laboratory, Sidi Mohamed Ben Abdellah University, Fez, Morocco).
 
-> **A Single-Inference Zero-Shot LLM Framework for Multi-Dimensional Analysis of Machine-Translated Multilingual Tourism Reviews**
-
-The paper presents a framework based on Large Language Models that extracts six
-analytical dimensions — sentiment polarity, sentiment intensity, emotional tone,
-aspect-level opinions, reported problems, and economic signals — from a single
-zero-shot inference, and applies it to 14,838 TripAdvisor reviews of two heritage
-attractions in Marrakech, Morocco (the Medina and Bahia Palace).
-
-This repository releases the extracted-signal dataset and the analysis code, so
-that the reported distributions, cross-site contrasts, temporal trends and
-cross-dimensional statistics can be recomputed from scratch.
-
----
-
-## Repository layout
-
-```
-marrakech-tourism-llm/
-├── data/
-│   ├── llm_extracted_signals.csv   14,838 rows — the released dataset
-│   └── DATA_DICTIONARY.md          column-by-column description
-├── code/
-│   ├── 00_prepare_data.py          builds the released dataset (see note below)
-│   ├── 01_analysis.py              reproduces the tables and statistics
-│   ├── 02_figures.py               reproduces the figures
-│   ├── 03_baselines.py             VADER and BERT baselines (see note below)
-│   └── extraction_prompt.txt       the zero-shot prompt, verbatim as executed
-├── outputs/                        written by the scripts
-├── requirements.txt
-├── LICENSE                         MIT — applies to the code
-└── LICENSE-DATA                    CC BY 4.0 — applies to data/
-```
+The repository lets anyone regenerate every table (1–11, A1–A8) and figure (3–8) of the paper **without API calls and without the review texts**.
 
 ## Quick start
 
 ```bash
-git clone https://github.com/<user>/marrakech-tourism-llm.git
-cd marrakech-tourism-llm
 pip install -r requirements.txt
-
-python code/01_analysis.py     # tables and statistics -> outputs/
-python code/02_figures.py      # figures -> outputs/
+jupyter notebook reproduce_all.ipynb     # or open it in Google Colab together with the data/ folder
 ```
 
-Both scripts read only `data/llm_extracted_signals.csv` and take under a minute
-on a laptop. No API key, no GPU and no network access are required.
+`reproduce_all.ipynb` writes to `outputs/`:
 
-## What the scripts reproduce
+* `all_tables.xlsx`: one sheet per table.
+* `fig3_confusion.png` … `fig8_heatmap.png`: the figures, redrawn from the data. The layout may differ slightly from the published figures, but the numbers are the same.
 
-`01_analysis.py` recomputes:
+Bootstrap confidence intervals use 2,000 resamples with seed 42 (1,000 for Table A5). Because each section starts its own random generator, the last digit of a confidence interval can differ from the paper.
 
-| Output | Content |
+## Contents
+
+| Path | Content |
 |---|---|
-| Table 3 | Aspect-based sentiment distribution, with off-schema label counts |
-| Table 4 | Top reported problems, with the free-form label audit |
-| Table 5 | Economic signals, with off-schema label counts |
-| Table 9 | Problem mention rates by heritage site, with Medina/Bahia ratios |
-| Table 10 | Sentiment distribution by era, plus the year-by-year series |
-| Table 11 | Conditional emotion probabilities given the four most frequent problems |
-| Section 4.6 | Cross-site emotional, aspect-level and trip-type contrasts |
-| Section 4.7 | Pre- versus post-pandemic problem shifts, including the within-site checks |
-| Section 4.8 | Chi-square test of independence and Cramér's *V* |
+| `reproduce_all.ipynb` (and `.py`) | Preprocessing and all analyses of the paper, from the files in `data/`. |
+| `prompt.txt` | The complete prompt sent to the models: schema, rules and the two format examples (Figure 1). |
+| `notebooks/gemini_original_run.ipynb` | Original Gemini 2.5 Flash run on the 14,838 reviews. |
+| `notebooks/baselines_vader_bert.ipynb` | VADER and BERT baselines, and language identification. |
+| `notebooks/gemini_robustness_runs.ipynb` | Robustness runs of Section 3.6: truncation, joint versus dedicated prompts, and run-to-run variability. |
+| `notebooks/gemini_translation_check.ipynb` | Translation-fidelity check on 133 original-language reviews. |
+| `data/corpus_llm_outputs.csv` | One row per review (14,838): anonymised index, site, star rating, date, trip type, text length and all Gemini outputs of the original run. |
+| `data/baselines_vader_bert.csv` | VADER and BERT predictions on the 500-character and full texts. |
+| `data/human_reference_300.csv` | Labels of annotator 1 (`A1_*`) and annotator 2 (`A2_*`) for the 300 reference reviews. |
+| `data/interllm_gemini_claude_300.csv` | Gemini (`G_*`) and Claude Opus 4.7 (`C_*`) outputs for the inter-LLM sample. |
+| `data/reruns/` | Raw JSON outputs, token logs and run information of the robustness runs (23 September 2026). |
+| `data/translation/` | Outputs on the English (`EN`, `EN2`) and original (`ORIG`) texts, sample description, token log (24 September 2026). |
 
-`02_figures.py` regenerates Figures 4, 5, 6, 7 and 8 as PNG (600 dpi) and PDF.
+## Data notes
 
-Every table is also written to `outputs/` as CSV.
-
-## Two scripts that cannot be re-run here
-
-`00_prepare_data.py` and `03_baselines.py` require the raw scrape, which is not
-part of this release: **review texts are not redistributed, in accordance with
-TripAdvisor's terms of service**, and all reviewer identifiers were removed prior
-to analysis. Both scripts are included so that the de-identification steps and
-the baseline configuration — in particular the input-harmonization procedure of
-Section 3.3 — can be inspected in full.
-
-## The dataset
-
-`data/llm_extracted_signals.csv` contains one row per review and 22 columns: the
-star rating and its three-class mapping, the site, the review year and pandemic
-era, the trip metadata, and the thirteen fields extracted by the LLM. Reviewer
-names, review titles and review bodies are not included. See
-[`data/DATA_DICTIONARY.md`](data/DATA_DICTIONARY.md) for the full column
-description and the label vocabulary of each field.
-
-A caveat carried over from the paper: reliability is not uniform across the
-extracted dimensions. The human gold-standard validation partitions them into
-high-, moderate- and low-validity tiers, and figures drawn from the low tier —
-the service aspect, recommendation and revisit intention — are reported as
-exploratory. Anyone reusing this dataset should apply the same distinction.
-
-## Extraction configuration
-
-Extraction used Gemini 2.5 Flash at temperature 0 with structured JSON output,
-under the prompt reproduced verbatim in `code/extraction_prompt.txt`. Reviews
-were truncated to 500 characters before processing. Because models served
-through commercial APIs are updated over time, re-running the extraction at a
-later date may not reproduce these labels exactly; the extracted labels are
-released here for that reason.
+* **No review text and no user name is redistributed**, in accordance with TripAdvisor's terms of service. Reviews are identified by `row_id`, their position in the collected file. The same `row_id` is used in every file, including `data/reruns/*` and `data/translation/*`.
+* **Preprocessing.** Review texts were analysed as collected. The only processing was trimming leading and trailing whitespace, and truncating to the first 500 characters for the main analysis; this is the same input for Gemini, VADER and BERT. No reviews were removed; the corpus contains 10 exact duplicate records, which were kept. Star ratings are mapped to three classes: 4–5 Positive, 3 Neutral, 1–2 Negative.
+* **Human reference sample.** 100 reviews were randomly sampled from each star-derived class. The sampled IDs are the `row_id` values in `data/human_reference_300.csv`. Both annotators labelled the full review text independently, with the same label definitions.
+* **Models and settings.** `gemini-2.5-flash` via `google-generativeai` 0.8.5: batches of 15 reviews, 4 parallel requests, up to 3 retries, provider default generation settings (no temperature set). Outputs of commercial models may change between runs and model versions; the measured run-to-run variability is reported in Section 4.9 of the paper.
+* **API keys** are typed at run time with `getpass` and are never stored in the notebooks.
 
 ## Licence
 
-Code is released under the MIT Licence. The dataset in `data/` is released under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-
-## Citation
-
-See [`CITATION.cff`](CITATION.cff).
+Code: MIT (see `LICENSE`). Derived data: CC BY 4.0.

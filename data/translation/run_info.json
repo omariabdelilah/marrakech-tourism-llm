@@ -1,0 +1,12 @@
+{
+  "run_date": "2026-09-24T16:01:06",
+  "model": "gemini-2.5-flash",
+  "model_versions_seen": [
+    "gemini-2.5-flash"
+  ],
+  "library": "google-generativeai 0.8.5",
+  "batch_size": 15,
+  "workers": 4,
+  "input": "full text (no truncation)",
+  "generation_config": "default (same as original run)"
+}
