@@ -37,7 +37,7 @@ Bootstrap confidence intervals use 2,000 resamples with seed 42 (1,000 for Table
 
 ## Data notes
 
-* **No review text and no user name is redistributed**, in accordance with TripAdvisor's terms of service. Reviews are identified by `row_id`, their position in the collected file. The same `row_id` is used in every file, including `data/reruns/*` and `data/translation/*`.
+* **No review text and no user name is redistributed**; only derived structured outputs are released. Reviews are identified by `row_id`, their position in the collected file. The same `row_id` is used in every file, including `data/reruns/*` and `data/translation/*`.
 * **Preprocessing.** Review texts were analysed as collected. The only processing was trimming leading and trailing whitespace, and truncating to the first 500 characters for the main analysis; this is the same input for Gemini, VADER and BERT. No reviews were removed; the corpus contains 10 exact duplicate records, which were kept. Star ratings are mapped to three classes: 4–5 Positive, 3 Neutral, 1–2 Negative.
 * **Human reference sample.** 100 reviews were randomly sampled from each star-derived class. The sampled IDs are the `row_id` values in `data/human_reference_300.csv`. Both annotators labelled the full review text independently, with the same label definitions.
 * **Models and settings.** `gemini-2.5-flash` via `google-generativeai` 0.8.5: batches of 15 reviews, 4 parallel requests, up to 3 retries, provider default generation settings (no temperature set). Outputs of commercial models may change between runs and model versions; the measured run-to-run variability is reported in Section 4.9 of the paper.
