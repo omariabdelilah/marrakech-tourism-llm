@@ -16,7 +16,7 @@ jupyter notebook reproduce_all.ipynb     # or open it in Google Colab together w
 * `all_tables.xlsx`: one sheet per table.
 * `fig3_confusion.png` … `fig8_heatmap.png`: the figures, redrawn from the data. The layout may differ slightly from the published figures, but the numbers are the same.
 
-Bootstrap confidence intervals use 2,000 resamples with seed 42 (1,000 for Table A5). Because each section starts its own random generator, the last digit of a confidence interval can differ from the paper.
+Bootstrap confidence intervals use 2,000 resamples with seed 42 (1,000 for Table A5). Point estimates are identical to the paper. Bootstrap confidence limits can differ from the paper by up to about 0.01, because each section starts its own random generator and the resampled draws are therefore not the same.
 
 ## Contents
 

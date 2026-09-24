@@ -9,8 +9,9 @@
 # * `all_tables.xlsx` – one sheet per table;
 # * `fig3_confusion.png` … `fig8_heatmap.png`.
 #
-# Bootstrap confidence intervals use 2,000 resamples with seed 42 (1,000 for Table A5). Because each
-# section starts its own random generator, the last digit of a CI can differ slightly from the paper.
+# Bootstrap confidence intervals use 2,000 resamples with seed 42 (1,000 for Table A5). Point estimates
+# are identical to the paper; because each section starts its own random generator, confidence limits
+# can differ from the paper by up to about 0.01.
 
 # %%
 import os, json, ast, re, warnings
