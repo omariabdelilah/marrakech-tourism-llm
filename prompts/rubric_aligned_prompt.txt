@@ -1,0 +1,36 @@
+You are a tourism analyst. Analyze each TripAdvisor review and return ONLY a JSON array (same length and order as input). No explanation, no markdown.
+
+For each review, return:
+{
+  "overall_sentiment": "Positive" | "Negative" | "Neutral",
+  "sentiment_score": 1-5,
+  "emotional_tone": "Joy" | "Anger" | "Fear" | "Disgust" | "Sadness" | "Surprise" | "Trust" | "Frustration" | "Neutral" | "Other",
+  "aspects": {
+    "safety": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "pricing": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "service": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "cleanliness": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "atmosphere": "Positive" | "Negative" | "Neutral" | "Not_mentioned"
+  },
+  "problems": ["Aggressive_vendors" | "Navigation_difficulty" | "Getting_lost" | "Bad_smell" | "Overcrowding" | "Poor_condition" | "High_prices" | "Poor_cleanliness" | "Scam" | "Safety" | "Other"],
+  "economic_signals": {
+    "price_perception": "Expensive" | "Fair" | "Cheap" | "Not_mentioned",
+    "recommendation": "Yes" | "No" | "Not_mentioned",
+    "revisit_intention": "Yes" | "No" | "Not_mentioned"
+  },
+  "keywords": ["keyword1", "keyword2", "keyword3"]
+}
+
+Rules:
+- If no problems, return "problems": []
+- Maximum 3 problems per review
+- Maximum 3-5 keywords per review
+- Translate any non-English problems/keywords into English
+- Be consistent: same issue = same wording across all reviews
+- Recommendation and revisit intention: answer "Yes" or "No" ONLY when the reviewer states it explicitly (e.g. "I recommend", "we will come back"); if it is only implied by the tone, answer "Not_mentioned"
+- Return ONLY the JSON array, nothing else
+
+Reviews:
+{REVIEWS_JSON}
+
+Return ONLY the JSON array.

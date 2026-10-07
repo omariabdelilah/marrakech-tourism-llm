@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this data or code, please cite the paper below."
+title: "marrakech-tourism-llm: data and code"
+type: dataset
+license: CC-BY-4.0
+repository-code: "https://github.com/omariabdelilah/marrakech-tourism-llm"
+authors:
+  - family-names: Omari
+    given-names: Abdelilah
+    email: abdelilah.omari@usmba.ac.ma
+    affiliation: "L3IA Laboratory, Faculty of Sciences Dhar El Mahraz, Sidi Mohamed Ben Abdellah University, Fez, Morocco"
+  - family-names: Satauri
+    given-names: Imane
+    email: imane.satauri@usmba.ac.ma
+    affiliation: "L3IA Laboratory, Faculty of Sciences Dhar El Mahraz, Sidi Mohamed Ben Abdellah University, Fez, Morocco"
+keywords:
+  - large language models
+  - prompt-based extraction
+  - aspect-based sentiment analysis
+  - tourism reviews
+  - TripAdvisor
+preferred-citation:
+  type: article
+  title: "A training-free large language model framework for multidimensional analysis of tourism reviews"
+  authors:
+    - family-names: Omari
+      given-names: Abdelilah
+    - family-names: Satauri
+      given-names: Imane
+  journal: "Discover Artificial Intelligence"
+  year: 2026
+  status: submitted

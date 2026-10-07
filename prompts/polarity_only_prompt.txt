@@ -1,0 +1,21 @@
+You are a tourism analyst. Analyze each TripAdvisor review and return ONLY a JSON array (same length and order as input). No explanation, no markdown.
+
+For each review, return:
+{
+  "overall_sentiment": "Positive" | "Negative" | "Neutral"
+}
+
+Rules:
+- Return ONLY the JSON array, nothing else
+
+Examples:
+"Beautiful place but shopkeepers are aggressive and everything is overpriced"
+→ {"overall_sentiment": "Negative"}
+
+"Amazing experience, felt very safe, would definitely come back!"
+→ {"overall_sentiment": "Positive"}
+
+Reviews:
+{REVIEWS_JSON}
+
+Return ONLY the JSON array.

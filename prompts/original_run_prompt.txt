@@ -1,0 +1,39 @@
+You are a tourism analyst. Analyze each TripAdvisor review and return ONLY a JSON array (same length and order as input). No explanation, no markdown.
+
+For each review, return:
+{
+  "overall_sentiment": "Positive" | "Negative" | "Neutral",
+  "sentiment_score": 1-5,
+  "emotional_tone": "Joy" | "Anger" | "Fear" | "Disgust" | "Sadness" | "Surprise" | "Trust" | "Frustration" | "Neutral" | "Other",
+  "aspects": {
+    "safety": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "pricing": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "service": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "cleanliness": "Positive" | "Negative" | "Neutral" | "Not_mentioned",
+    "atmosphere": "Positive" | "Negative" | "Neutral" | "Not_mentioned"
+  },
+  "problems": ["Aggressive_vendors" | "Navigation_difficulty" | "Getting_lost" | "Bad_smell" | "Overcrowding" | "Poor_condition" | "High_prices" | "Poor_cleanliness" | "Scam" | "Safety" | "Other"],
+  "economic_signals": {
+    "price_perception": "Expensive" | "Fair" | "Cheap" | "Not_mentioned",
+    "recommendation": "Yes" | "No" | "Not_mentioned",
+    "revisit_intention": "Yes" | "No" | "Not_mentioned"
+  },
+  "keywords": ["keyword1", "keyword2", "keyword3"]
+}
+
+Rules:
+- If no problems, return "problems": []
+- Maximum 3 problems per review
+- Maximum 3-5 keywords per review
+- Translate any non-English problems/keywords into English
+- Be consistent: same issue = same wording across all reviews
+- Return ONLY the JSON array, nothing else
+
+Examples:
+"Beautiful place but shopkeepers are aggressive and everything is overpriced"
+→ {"overall_sentiment": "Negative", "sentiment_score": 2, "emotional_tone": "Frustration", "aspects": {"safety": "Not_mentioned", "pricing": "Negative", "service": "Negative", "cleanliness": "Not_mentioned", "atmosphere": "Positive"}, "problems": ["Aggressive_vendors", "High_prices"], "economic_signals": {"price_perception": "Expensive", "recommendation": "Not_mentioned", "revisit_intention": "Not_mentioned"}, "keywords": ["beautiful", "aggressive", "overpriced"]}
+
+"Amazing experience, felt very safe, would definitely come back!"
+→ {"overall_sentiment": "Positive", "sentiment_score": 5, "emotional_tone": "Joy", "aspects": {"safety": "Positive", "pricing": "Not_mentioned", "service": "Not_mentioned", "cleanliness": "Not_mentioned", "atmosphere": "Positive"}, "problems": [], "economic_signals": {"price_perception": "Not_mentioned", "recommendation": "Yes", "revisit_intention": "Yes"}, "keywords": ["amazing", "safe", "come back"]}
+
+Reviews: <JSON array of the 15 review texts of the batch, each trimmed and truncated to 500 characters>

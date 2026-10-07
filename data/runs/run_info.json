@@ -1,0 +1,27 @@
+{
+  "run_date": "2026-10-07T01:36:58",
+  "model": "gemini-2.5-flash",
+  "model_versions_seen": [
+    "gemini-2.5-flash"
+  ],
+  "library": "google-genai 2.26.0",
+  "python": "3.12.4",
+  "temperature": 0.0,
+  "seed": 42,
+  "thinking_budget": 8192,
+  "batch_size": 15,
+  "workers": 8,
+  "max_tries": 4,
+  "input": "full text, whitespace trimmed",
+  "batch_order_seeds": {
+    "run1": 101,
+    "run2": 102,
+    "run3": 103,
+    "polarity_only": 101,
+    "rubric_300": 300
+  },
+  "prices_used": {
+    "input": 0.3,
+    "output": 2.5
+  }
+}
