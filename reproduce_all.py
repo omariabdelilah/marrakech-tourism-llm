@@ -388,11 +388,11 @@ TABLES['Sec4_7_decomposition'] = dec.round(1).reset_index()
 # ## 9. Problem–emotion structure — Table 11, Figure 8, Table A8
 
 # %%
-pairs = pd.DataFrame([(p, e) for x, e in zip(df.probs, df.llm_emotion) for p in x if p in PROBLEMS10 and e in EMOTIONS],
+pairs = pd.DataFrame([(p, e) for x, e in zip(df.probs, df.llm_emotion) for p in dict.fromkeys(x) if p in PROBLEMS10 and e in EMOTIONS],
                      columns=['problem', 'emotion'])
 ct = pd.crosstab(pairs.problem, pairs.emotion); c2, p, dof, V = cramers_v(ct)
 # Table 11 and Figure 8: P(emotion | problem) over all emotion labels (off-schema labels stay in the denominator)
-pairs_all = pd.DataFrame([(p, e) for x, e in zip(df.probs, df.llm_emotion) for p in x if p in PROBLEMS10], columns=['problem', 'emotion'])
+pairs_all = pd.DataFrame([(p, e) for x, e in zip(df.probs, df.llm_emotion) for p in dict.fromkeys(x) if p in PROBLEMS10], columns=['problem', 'emotion'])   # a label repeated within a review counts once
 cond = (pd.crosstab(pairs_all.problem, pairs_all.emotion, normalize='index') * 100)[EMOTIONS]
 marg = df.llm_emotion.value_counts(normalize=True) * 100
 t11 = pd.concat([marg.reindex(['Joy', 'Frustration', 'Anger', 'Fear', 'Disgust']).rename('Marginal'),
@@ -425,7 +425,7 @@ tA8 = pd.DataFrame({'dominant_human': cH.idxmax(1), 'dominant_llm': cL.idxmax(1)
 tA8['same'] = tA8.dominant_human == tA8.dominant_llm
 TABLES['TableA8_pairings'] = tA8.reset_index()
 TABLES['TableA8_summary'] = pd.DataFrame([{'reviews_with_problem_either': len(idx), 'exact_match': exact, 'mean_jaccard': jac8.mean(),
-    'jaccard_lo': np.percentile(jb, 2.5), 'jaccard_hi': np.percentile(jb, 97.5), 'pearson_r_100_cells': pearsonr(x, y_)[0],
+    'jaccard_lo': np.percentile(jb, 2.5), 'jaccard_hi': np.percentile(jb, 97.5), 'pearson_r_all_cells': pearsonr(x, y_)[0], 'n_cells': len(x),
     'spearman_rho': spearmanr(x, y_)[0], 'same_emotion_when_both_flag': (hr.A1_emotion.values[anyboth] == L.emotion.values[anyboth]).mean()}]).round(3)
 
 # %% [markdown]
@@ -726,7 +726,7 @@ TABLES['R2_length_coverage'] = pd.DataFrame([{'n_lt80': int((ln < 80).sum()), 'p
 
 # (e) problem-emotion association: permutation test that resamples reviews (emotions shuffled across reviews)
 sub = df[df.probs.apply(lambda x: any(p in PROBLEMS10 for p in x))]
-emo = sub.llm_emotion.astype(str).values; plist = [[p for p in x if p in PROBLEMS10] for x in sub.probs]
+emo = sub.llm_emotion.astype(str).values; plist = [[p for p in dict.fromkeys(x) if p in PROBLEMS10] for x in sub.probs]
 def chi_stat(e):
     a = [p for ps in plist for p in ps]; b = [ee for ps, ee in zip(plist, e) for _ in ps]
     t = pd.crosstab(pd.Series(a), pd.Series(b)); return chi2_contingency(t)[0], t
