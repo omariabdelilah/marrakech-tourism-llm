@@ -15,7 +15,8 @@
 # * `all_tables.xlsx` – one sheet per table;
 # * `fig3_confusion.png` … `fig8_heatmap.png`.
 #
-# Bootstrap confidence intervals use 2,000 resamples with seed 42. Running the notebook from top to
+# Bootstrap confidence intervals use 2,000 resamples with seed 42; the intervals of the post-stratified precision and recall
+# and of the corrected problem rates (Tables 4, 8, 9, A12) use Jeffreys posteriors propagated by simulation (20,000 draws, seed 42). Running the notebook from top to
 # bottom reproduces the values reported in the paper. Runtime: about 15 minutes on a laptop.
 
 # %%
@@ -707,6 +708,91 @@ for d in HDIMS + [f'p_{p}' for p in PROBLEMS10]:
     q = d == 'score'; k1 = wkappa(hr[f'A1_{d}'], L[d], q); k2 = wkappa(hr[f'A2_{d}'], L[d], q); hh = wkappa(hr[f'A1_{d}'], hr[f'A2_{d}'], q)
     rows.append({'dimension': d, 'kappa_A1_w': k1, 'kappa_A2_w': k2, 'kappa_min_w': min(k1, k2), 'kappa_A1_A2_w': hh, 'tier_w': tier(min(k1, k2))})
 TABLES['R2_kappa_poststratified'] = pd.DataFrame(rows).round(3)
+
+# (c2) round 3: intervals that remain valid when a cell is empty (Jeffreys posteriors propagated by simulation),
+# and error rates estimated within each site (check of the assumption behind the site correction)
+NS = 20000; rng = RNG(); site_h = META.loc[hr.index, 'site'].values
+
+def beta_draw(k, n, size):            # Jeffreys posterior for a proportion
+    return rng.beta(k + 0.5, n - k + 0.5, size)
+
+# ---------- post-stratified precision / recall: Dirichlet(Jeffreys) per stratum ----------
+def wPR_point(y, p):
+    tp = fp = fn = 0.0
+    for s in LAB:
+        m = strata == s; n = m.sum(); w = Wc[s]
+        tp += w * ((y == 1) & (p == 1) & m).sum() / n; fp += w * ((y == 0) & (p == 1) & m).sum() / n; fn += w * ((y == 1) & (p == 0) & m).sum() / n
+    return tp / (tp + fp) if tp + fp else np.nan, tp / (tp + fn) if tp + fn else np.nan
+def wPR_sim(y, p):
+    TP = FP = FN = 0
+    for s in LAB:
+        m = strata == s
+        c = np.array([((y == 1) & (p == 1) & m).sum(), ((y == 0) & (p == 1) & m).sum(), ((y == 1) & (p == 0) & m).sum(), ((y == 0) & (p == 0) & m).sum()])
+        d = rng.dirichlet(c + 0.5, NS); TP = TP + Wc[s] * d[:, 0]; FP = FP + Wc[s] * d[:, 1]; FN = FN + Wc[s] * d[:, 2]
+    return TP / (TP + FP), TP / (TP + FN)
+
+# ---------- corrected prevalence: Beta(Jeffreys) PPV_s and FOR_s, propagated by simulation ----------
+def comps(y, p, s, mask=None):
+    m = (strata == s) if mask is None else (strata == s) & mask
+    return ((y == 1) & (p == 1) & m).sum(), ((p == 1) & m).sum(), ((y == 1) & (p == 0) & m).sum(), ((p == 0) & m).sum()
+def corr(y, p, cp, site=None, sitemask_ref=None, sim=False):
+    if site is None: wmix = Wc; cm = np.ones(len(cp), bool)
+    else: cm = csite == site; wmix = pd.Series(cst[cm]).value_counts(normalize=True).reindex(LAB).fillna(0)
+    a_all, n1_all, b_all, n0_all = ((y == 1) & (p == 1)).sum(), (p == 1).sum(), ((y == 1) & (p == 0)).sum(), (p == 0).sum()
+    tot = 0
+    for s in LAB:
+        q = cp[cm & (cst == s)].mean()
+        a, n1, b, n0 = comps(y, p, s, sitemask_ref)
+        if n1 == 0: a, n1 = a_all, n1_all
+        if n0 == 0: b, n0 = b_all, n0_all
+        if sim: ppv, fo = beta_draw(a, n1, NS), beta_draw(b, n0, NS)
+        else: ppv, fo = a / n1, b / n0
+        tot = tot + wmix[s] * (q * ppv + (1 - q) * fo)
+    return tot
+
+def ci(sim, pt, scale=1.0):
+    lo, hi = np.nanpercentile(sim, [2.5, 97.5])
+    # Brown-Cai-DasGupta convention: when a component lies on the boundary the interval is extended to include the point estimate
+    return min(lo, pt) * scale, max(hi, pt) * scale
+rows, rows_site, rows_for = [], [], []
+for pr in PROBLEMS10:
+    pm = L[f'p_{pr}'].values.astype(int)
+    cp = META.loc[COMMON, 'probs'].apply(lambda l, pr=pr: int(pr in l)).values
+    r = {'problem': pr, 'LLM_raw_%': cp.mean() * 100}
+    for ref in ['A1', 'A2']:
+        y = hr[f'{ref}_p_{pr}'].values.astype(int)
+        P, R = wPR_point(y, pm); Ps, Rs = wPR_sim(y, pm)
+        c0 = corr(y, pm, cp); cs = corr(y, pm, cp, sim=True)
+        (pl, ph), (rl, rh), (cl, chh) = ci(Ps, P), ci(Rs, R), ci(cs, c0, 100)
+        r.update({f'Pw_{ref}': P, f'Pw_lo_{ref}': pl, f'Pw_hi_{ref}': ph, f'Rw_{ref}': R, f'Rw_lo_{ref}': rl, f'Rw_hi_{ref}': rh,
+                  f'corr_{ref}': c0 * 100, f'corr_lo_{ref}': cl, f'corr_hi_{ref}': chh})
+        for site in ['medina', 'bahia']:
+            c0s = corr(y, pm, cp, site=site); css = corr(y, pm, cp, site=site, sim=True)
+            # sensitivity: error rates estimated on the reference reviews of the same site only
+            c1s = corr(y, pm, cp, site=site, sitemask_ref=(site_h == site)); c1ss = corr(y, pm, cp, site=site, sitemask_ref=(site_h == site), sim=True)
+            rows_site.append({'problem': pr, 'site': site, 'ref': ref, 'raw_%': cp[csite == site].mean() * 100,
+                              'corr_pooled_%': c0s * 100, 'lo': ci(css, c0s, 100)[0], 'hi': ci(css, c0s, 100)[1],
+                              'corr_sitespecific_%': c1s * 100, 'lo_ss': ci(c1ss, c1s, 100)[0], 'hi_ss': ci(c1ss, c1s, 100)[1]})
+            m0 = (site_h == site) & (pm == 0); k = int(((y == 1) & m0).sum()); n = int(m0.sum())
+            lo_, hi_ = (np.percentile(beta_draw(k, n, NS), [2.5, 97.5]) if n else (np.nan, np.nan))
+            rows_for.append({'problem': pr, 'site': site, 'ref': ref, 'misses': k, 'non_detections': n, 'FOR_%': 100 * k / n if n else np.nan,
+                             'FOR_lo_%': 100 * lo_, 'FOR_hi_%': 100 * hi_, 'ref_positives': int((y[site_h == site] == 1).sum())})
+    rows.append(r)
+# check: post-stratified accuracy (Table A11) with Jeffreys Beta per star class vs the bootstrap
+ra = []
+for ref in ['A1', 'A2']:
+    yv = hr[f'{ref}_sentiment'].values
+    for m_, v in PB.items():
+        v = np.asarray(v); pt = 0; sim = 0; zero = False
+        for s_ in LAB:
+            m = strata == s_; k = int((yv[m] == v[m]).sum()); n = int(m.sum()); zero |= k in (0, n)
+            pt += Wc[s_] * k / n; sim = sim + Wc[s_] * beta_draw(k, n, NS)
+        lo, hi = ci(sim, pt); ra.append({'ref': ref, 'method': m_, 'Acc_w': pt, 'lo_J': lo, 'hi_J': hi, 'boundary_cell': zero})
+A = pd.DataFrame(ra)
+TABLES['R3_corrected_jeffreys'] = pd.DataFrame(rows).round(3)
+TABLES['R3_site_corrected'] = pd.DataFrame(rows_site).round(2)
+TABLES['R3_FOR_by_site'] = pd.DataFrame(rows_for).round(2)
+TABLES['R3_A11_jeffreys_check'] = A.round(3)
 
 # (d) per-emotion precision and recall, atmosphere mention rate, validation-sample length coverage
 rows = []

@@ -13,10 +13,10 @@ jupyter notebook reproduce_all.ipynb     # or: python reproduce_all.py
 
 `reproduce_all` writes to `outputs/`:
 
-* `all_tables.xlsx`: one sheet per table, plus the sheets `R2_*` for the robustness analyses (run-to-run variability, batch composition, rubric-aligned prompt, post-stratification, corrected prevalence, per-emotion metrics, permutation test).
+* `all_tables.xlsx`: one sheet per table, plus the sheets `R2_*` for the robustness analyses (run-to-run variability, batch composition, rubric-aligned prompt, post-stratification, corrected prevalence, per-emotion metrics, permutation test) and `R3_*` for the intervals of the corrected rates and the site-specific error rates.
 * `fig3_confusion.png` … `fig8_heatmap.png`: the figures, redrawn from the data (layout may differ slightly from the published figures; the numbers are the same).
 
-Bootstrap confidence intervals use 2,000 resamples with seed 42. The full script takes about 15 minutes.
+Bootstrap confidence intervals use 2,000 resamples with seed 42. The intervals of the post-stratified precision and recall and of the corrected problem rates (Tables 4, 8, 9 and A12) use Jeffreys posteriors propagated by simulation (20,000 draws, seed 42), which remain valid when a cell of the reference sample is empty (sheets `R3_*`, added in the third revision, which also contain the false-omission rates by site). The full script takes about 20 minutes.
 
 ## Main configuration
 
