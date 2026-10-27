@@ -743,17 +743,19 @@ def corr(y, p, cp, site=None, sitemask_ref=None, sim=False):
     for s in LAB:
         q = cp[cm & (cst == s)].mean()
         a, n1, b, n0 = comps(y, p, s, sitemask_ref)
-        if n1 == 0: a, n1 = a_all, n1_all
-        if n0 == 0: b, n0 = b_all, n0_all
+        # point estimate: a class with no detections (or no non-detections) takes the pooled proportion;
+        # simulation: such a class gets its own uninformative Jeffreys posterior, Beta(0.5, 0.5)
         if sim: ppv, fo = beta_draw(a, n1, NS), beta_draw(b, n0, NS)
-        else: ppv, fo = a / n1, b / n0
+        else: ppv, fo = (a / n1 if n1 else a_all / n1_all), (b / n0 if n0 else b_all / n0_all)
         tot = tot + wmix[s] * (q * ppv + (1 - q) * fo)
     return tot
 
 def ci(sim, pt, scale=1.0):
     lo, hi = np.nanpercentile(sim, [2.5, 97.5])
-    # Brown-Cai-DasGupta convention: when a component lies on the boundary the interval is extended to include the point estimate
-    return min(lo, pt) * scale, max(hi, pt) * scale
+    # Brown-Cai-DasGupta convention, applied only when the estimate itself is 0 or 1
+    if pt >= 1 - 1e-12: hi = 1.0
+    if pt <= 1e-12: lo = 0.0
+    return lo * scale, hi * scale
 rows, rows_site, rows_for = [], [], []
 for pr in PROBLEMS10:
     pm = L[f'p_{pr}'].values.astype(int)
